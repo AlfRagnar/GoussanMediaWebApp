@@ -1,0 +1,72 @@
+﻿@page "/Edit/{id}"
+
+@using Microsoft.Azure.Cosmos;
+@inject ICosmosDbService _cosmosDb
+@inject NavigationManager  navigation
+
+<p>This is where you will Edit Documents, this is made mainly using html components and bootstrap classes for styling, rest is handled by blazor with C#</p>
+
+@if (list == null)
+{
+    <h3>
+        Fetching document from Cosmos DB
+    </h3>
+}
+else
+{
+    <div class="container">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Title</span>
+            </div>
+            <input type="text" class="form-control" @bind-value="list.Name" />
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea type="text" class="form-control" id="description" @bind="list.Description" />
+        </div>
+
+        <br />
+        <p><em>Completed?</em></p>
+        <br />
+
+        <input type="checkbox" @bind="list.Completed" />
+        <br />
+
+        <p>Created at: @list.Created</p>
+        <p>Last Time Changed at: @list.Changed</p>
+        <br />
+        <button class="btn btn-primary" @onclick="@(() => EditList(list))">
+            Save
+        </button>
+    </div>
+
+}
+
+@code {
+    [Parameter]
+    public string id { get; set; }
+    private readonly string containerName = "ToDoList";
+    private ToDoList list;
+    private Container _container;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _container = _cosmosDb.GetContainer(containerName);
+        list = await GetList(id, _container);
+    }
+
+    protected async Task<ToDoList> GetList(string id, Container container)
+    {
+        return list = await _cosmosDb.GetItemAsync(id, container);
+    }
+
+    protected async void EditList(ToDoList list)
+    {
+        //Container _container = _cosmosDb.GetContainer(containerName);
+        list.Changed = DateTime.Now;
+        await _cosmosDb.UpdateItem(list, _container);
+        navigation.NavigateTo("/list");
+    }
+}
