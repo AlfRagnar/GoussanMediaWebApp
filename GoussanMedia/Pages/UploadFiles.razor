@@ -1,41 +1,18 @@
 ﻿@page "/upload"
 @using System
 @using System.IO
-@using System.Linq
+
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Logging
 @using Microsoft.Azure.Cosmos;
-@using GoussanMedia.Domain.Models
 @using Azure.Storage.Blobs
 @using Azure.Storage.Blobs.Specialized
-@using Azure.Storage.Blobs.Models
+
 @inject ILogger<UploadFiles> Logger
 @inject IWebHostEnvironment Environment
-@inject BlobServiceClient serviceClient
-@inject BlockBlobClient _container
 @inject ICosmosDbService _cosmosDb
 
 <h3>Upload Files to Azure Storage</h3>
-<p>
-    <label>
-        Max file size:
-        <input type="number" @bind="maxFileSize" />
-    </label>
-</p>
-
-<p>
-    <label>
-        Max allowed files:
-        <input type="number" @bind="maxAllowedFiles" />
-    </label>
-</p>
-
-<p>
-    <label>
-        Upload up to @maxAllowedFiles of up to @maxFileSize bytes:
-        <InputFile OnChange="@LoadFiles" multiple />
-    </label>
-</p>
 
 @if (isLoading)
 {
@@ -62,14 +39,16 @@ else
     private List<IBrowserFile> loadedFiles = new();
     private List<Videos> videoResults = new();
     private string containerName = "Videos";
+    private string blobContainer = "goussanmedia";
+
 
     private int maxAllowedFiles = 3;
     private bool isLoading;
     private long maxFileSize = 1024 * 1024 * 15;
 
-    private async void UploadStreamAsync(Stream stream, string name)
+    protected override void OnInitialized()
     {
-        await _container.UploadAsync(stream);
+        base.OnInitialized();
     }
 
     private async Task LoadFiles(InputFileChangeEventArgs e)
@@ -84,34 +63,25 @@ else
             {
                 if (CheckFileType(file))
                 {
-                    string blobContainer = "goussanmedia";
                     string filenameForStorage = Guid.NewGuid().ToString();
                     loadedFiles.Add(file);
 
                     // Azure Storage Service
-                    BlobContainerClient blobContainerClient = serviceClient.GetBlobContainerClient(blobContainer);
-                    if (file.Size >= 1024 * 50)
-                    {
-                        
-                    }
-                    else
-                    {
 
-                    }
-                    await blobContainerClient.UploadBlobAsync(filenameForStorage, file.OpenReadStream());
-                    BlobClient storageBlob = blobContainerClient.GetBlobClient(filenameForStorage);
+                    // Will throw an error if blob already exists, likely will not happen due to blob name being a new GUID each time
+                    // Check if file got uploaded, will return error if not
 
                     // Azure Cosmos DB
                     Videos newVideo = new()
                     {
                         Id = filenameForStorage,
-                        BlobUri = storageBlob.Uri,
                         Extension = file.ContentType,
                         FileName = file.Name,
                         Size = file.Size,
                         UploadDate = DateTime.Now,
                         LastModified = file.LastModified
                     };
+
                     Container container = _cosmosDb.GetContainer(containerName);
                     await container.CreateItemAsync(newVideo, new PartitionKey(newVideo.Id));
 

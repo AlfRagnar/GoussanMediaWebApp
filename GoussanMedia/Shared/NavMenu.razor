@@ -1,37 +1,9 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">GoussanMediaServer</a>
-    <button class="navbar-toggler" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-</div>
-
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <ul class="nav flex-column">
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="list">
-                <span class="oi oi-plus" aria-hidden="true"></span> List
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="upload">
-                <span class="oi oi-plus" aria-hidden="true"></span> Upload Video
-            </NavLink>
-        </li>
-    </ul>
-</div>
-
-@code {
-    private bool collapseNavMenu = true;
-
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
-}
+﻿<MudPaper>
+    <MudNavMenu>
+        <MudText Typo="Typo.h6" Class="px-4">Goussan Media Server App</MudText>
+        <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary">by Alf Ragnar</MudText>
+        <MudDivider Class="my-2" />
+        <MudNavLink Icon="@Icons.Filled.List" Href="/list">Index</MudNavLink>
+        <MudNavLink Icon="@Icons.Filled.CloudUpload" Href="/upload">Upload Videos</MudNavLink>
+    </MudNavMenu>
+</MudPaper>

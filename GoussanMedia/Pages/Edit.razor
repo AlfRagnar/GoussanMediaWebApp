@@ -4,44 +4,44 @@
 @inject ICosmosDbService _cosmosDb
 @inject NavigationManager  navigation
 
-<p>This is where you will Edit Documents, this is made mainly using html components and bootstrap classes for styling, rest is handled by blazor with C#</p>
-
 @if (list == null)
 {
-    <h3>
-        Fetching document from Cosmos DB
-    </h3>
+    <MudSkeleton />
+    <MudSkeleton Animation="Animation.False" />
+    <MudSkeleton Animation="Animation.Wave" />
 }
 else
 {
-    <div class="container">
-        <div class="input-group mb-3">
-            <div class="input-group-prepend">
-                <span class="input-group-text">Title</span>
-            </div>
-            <input type="text" class="form-control" @bind-value="list.Name" />
-        </div>
-
-        <div class="form-group">
-            <label for="description">Description:</label>
-            <textarea type="text" class="form-control" id="description" @bind="list.Description" />
-        </div>
-
-        <br />
-        <p><em>Completed?</em></p>
-        <br />
-
-        <input type="checkbox" @bind="list.Completed" />
-        <br />
-
-        <p>Created at: @list.Created</p>
-        <p>Last Time Changed at: @list.Changed</p>
-        <br />
-        <button class="btn btn-primary" @onclick="@(() => EditList(list))">
+<MudGrid>
+    <MudItem xs="12" sm="6" md="4">
+        <MudTextField @bind-Value="list.Name" Label="Title" Variant="Variant.Text"></MudTextField>
+    </MudItem>
+    <MudItem xs="12" sm="12" md="12">
+        <MudTextField T="string" Label="Multiline" Variant="Variant.Outlined" Text="@list.Description" Lines="5" />
+    </MudItem>
+    <MudItem xs="6">
+        <MudSelect Label="Complete" Margin="Margin.Dense" @bind-Value="list.Completed" Class="mt-4">
+            <MudSelectItem Value="true">Yes</MudSelectItem>
+            <MudSelectItem Value="false">No</MudSelectItem>
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="12">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="@(() => EditList(list))">
             Save
-        </button>
-    </div>
-
+        </MudButton>
+    </MudItem>
+    <MudItem xs="12">
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" @onclick="@(() => navigation.NavigateTo("/list"))">
+            Return
+        </MudButton>
+    </MudItem>
+    <MudItem xs="6">
+        <MudText>Created at: @list.Created</MudText>
+    </MudItem>
+    <MudItem xs="6">
+        <MudText>Last time Changed: @list.Changed</MudText>
+    </MudItem>
+</MudGrid>
 }
 
 @code {

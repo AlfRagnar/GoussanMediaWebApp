@@ -6,69 +6,79 @@
 @inject ICosmosDbService _cosmosDb
 @inject NavigationManager  navigation
 
-<h1>Cosmos List</h1>
-
-<p>This is a component that demonstrates fetching data from cosmos DB and doing basic CRUD actions</p>
-
 @if (lists == null)
 {
-    <p><em>Loading...</em></p>
+    <MudSkeleton />
+    <MudSkeleton Animation="Animation.False" />
+    <MudSkeleton Animation="Animation.Wave" />
 }
 else
 {
-    <div>
-        <div>
-            <button class="btn btn-info" @onclick="navigateToAdd">
-                Add random document to list
-            </button>
-        </div>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Description</th>
-                    <th>Completed</th>
-                    <th>ID</th>
-                    <th>Created</th>
-                    <th>Last Time Changed</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (ToDoList list in lists)
+    <MudButton @onclick="(()=> navigateToAdd())" Color="Color.Primary" Variant="Variant.Filled">
+        Add New Document
+    </MudButton>
+
+    <MudTable Items="lists" Hover="true" Breakpoint="Breakpoint.Sm" Loading="_loading" LoadingProgressColor="Color.Info" Filter="new Func<ToDoList, bool>(FilterFunction1)">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Tasks</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>ID</MudTh>
+            <MudTh>Title</MudTh>
+            <MudTh>Description</MudTh>
+            <MudTh>Creation Date</MudTh>
+            <MudTh>Last Changed</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ID">@context.Id</MudTd>
+            <MudTd DataLabel="Title">@context.Name</MudTd>
+            <MudTd DataLabel="Description">@context.Description</MudTd>
+            <MudTd DataLabel="Creation Date">@context.Created</MudTd>
+            <MudTd DataLabel="Last Changed">@context.Changed</MudTd>
+            @if (context.Completed)
                 {
-                    <tr>
-                        <td>@list.Name</td>
-                        <td>@list.Description</td>
-                        <td>
-                            <input type="checkbox" @bind="@list.Completed" disabled />
-                        </td>
-                        <td>@list.Id</td>
-                        <td>@list.Created</td>
-                        <td>@list.Changed</td>
-                        <td>
-                            <button class="btn btn-outline-info" @onclick="@(() => Navigate(list.Id))">
-                                Edit
-                            </button>
-                            <button class="btn btn-danger" @onclick="@(() => DeleteDoc(list.Id))">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
+                <MudTd DataLabel="Complete">Finished</MudTd>
                 }
-            </tbody>
-        </table>
-    </div>
+                else
+                {
+                <MudTd DataLabel="Complete">Incomplete</MudTd>
+
+                }
+            <MudTd>
+                <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+                    <MudIconButton @onclick="@(() => Navigate(context.Id))" Icon="@Icons.Material.Filled.EditNote" Color="Color.Primary">
+                        Save
+                    </MudIconButton>
+                    <MudIconButton @onclick="@(() => DeleteDoc(context.Id))" Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Secondary">
+                        Delete
+                    </MudIconButton>
+                </MudButtonGroup>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+
 }
 
 @code {
     private IEnumerable<ToDoList> lists;
+    Container _container;
     private readonly string containerName = "ToDoList";
+    private bool _loading = true;
+    private string searchString1 = "";
+    private string searchString2 = "";
 
     protected override async Task OnInitializedAsync()
     {
-        Container _container = _cosmosDb.GetContainer(containerName);
+        _container = _cosmosDb.GetContainer(containerName);
         lists = await GetLists(_container);
+        _loading = false;
     }
 
     protected async Task<IEnumerable<ToDoList>> GetLists(Container container)
@@ -78,7 +88,7 @@ else
 
     private async Task<IEnumerable<ToDoList>> DeleteDoc(string id)
     {
-        Container _container = _cosmosDb.GetContainer(containerName);
+        _container = _cosmosDb.GetContainer(containerName);
         try
         {
             await _container.DeleteItemAsync<ToDoList>(id, new PartitionKey(id));
@@ -89,6 +99,21 @@ else
         return lists = await GetLists(_container);
 
     }
+
+    private bool FilterFunction1(ToDoList toDoList) => FilterFunction(toDoList, searchString1);
+    private bool FilterFunction2(ToDoList toDoList) => FilterFunction(toDoList, searchString2);
+
+    private bool FilterFunction(ToDoList toDoList, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (toDoList.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (toDoList.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
     // Navigation events
 
     private void navigateToAdd()

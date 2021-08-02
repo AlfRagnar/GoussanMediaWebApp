@@ -10,6 +10,7 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MudBlazor.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -34,6 +35,9 @@ namespace GoussanMedia
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddHttpClient();
+
+            // Add MudBlazor Service
+            services.AddMudServices();
 
             // Add  Cosmos Db Service
             services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync().GetAwaiter().GetResult());
