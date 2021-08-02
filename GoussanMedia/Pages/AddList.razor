@@ -1,0 +1,61 @@
+﻿@page "/addList"
+
+@using GoussanMedia.Domain.Models
+@using Microsoft.Azure.Cosmos;
+
+@inject ICosmosDbService _cosmosDb
+@inject NavigationManager  navigation
+@inject ILogger<AddList> Logger
+
+<h1>Cosmos List</h1>
+
+<p>This is where you will create documents, This component uses mainly blazor only components with the being bootstrap</p>
+
+<EditForm Model="lists" OnValidSubmit="@CreateDoc">
+    <DataAnnotationsValidator />
+    <label>
+        Document ID: @lists.Id
+    </label>
+    <br />
+    <br />
+    <label>
+        Document Title:
+        <InputText @bind-Value="lists.Name" />
+    </label>
+    <br />
+    <br />
+    <label>
+        Document Description:
+        <InputTextArea @bind-Value="lists.Description"></InputTextArea>
+    </label>
+    <br />
+    <br />
+    <label>
+        Completed:
+        <InputCheckbox @bind-Value="lists.Completed"></InputCheckbox>
+    </label>
+    <br />
+    <button class="btn btn-danger">Submit</button>
+</EditForm>
+
+@code {
+    private ToDoList lists = new() { Id = Guid.NewGuid().ToString() };
+    private readonly string containerName = "ToDoList";
+
+    private async void CreateDoc()
+    {
+        Container _container = _cosmosDb.GetContainer(containerName);
+
+        lists.Created = DateTime.Now;
+        try
+        {
+            await _container.CreateItemAsync(lists, new PartitionKey(lists.Id));
+        }
+        catch (CosmosException ex)
+        {
+            Logger.LogError(ex.ActivityId, ex, ex.Message);
+            throw;
+        }
+        navigation.NavigateTo("list");
+    }
+}

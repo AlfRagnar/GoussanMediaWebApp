@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <UserSecretsId>1675802b-181d-4333-ab19-f57bd65d37f7</UserSecretsId>
+    <ApplicationInsightsResourceId>/subscriptions/39ef4e8a-8579-402a-bcb0-fa3a4bbb8942/resourceGroups/GoussanMedia/providers/microsoft.insights/components/goussanmedia</ApplicationInsightsResourceId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="C:\Users\alfi4\.nuget\packages\microsoft.azure.cosmos\3.20.1\contentFiles\any\netstandard2.0\ThirdPartyNotice.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.2.1" />
+    <PackageReference Include="Azure.Identity" Version="1.4.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.9.1" />
+    <PackageReference Include="Azure.Storage.Files.Shares" Version="12.7.0" />
+    <PackageReference Include="Azure.Storage.Queues" Version="12.7.0" />
+    <PackageReference Include="Markdig" Version="0.25.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.17.0" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.20.1" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.9.2" />
+    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GoussanMedia.DataAccess\GoussanMedia.DataAccess.csproj" />
+    <ProjectReference Include="..\GoussanMedia.Domain\GoussanMedia.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

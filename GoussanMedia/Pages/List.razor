@@ -1,0 +1,102 @@
+﻿@page "/list"
+
+@using GoussanMedia.Domain.Models
+@using Microsoft.Azure.Cosmos;
+
+@inject ICosmosDbService _cosmosDb
+@inject NavigationManager  navigation
+
+<h1>Cosmos List</h1>
+
+<p>This is a component that demonstrates fetching data from cosmos DB and doing basic CRUD actions</p>
+
+@if (lists == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div>
+        <div>
+            <button class="btn btn-info" @onclick="navigateToAdd">
+                Add random document to list
+            </button>
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Completed</th>
+                    <th>ID</th>
+                    <th>Created</th>
+                    <th>Last Time Changed</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (ToDoList list in lists)
+                {
+                    <tr>
+                        <td>@list.Name</td>
+                        <td>@list.Description</td>
+                        <td>
+                            <input type="checkbox" @bind="@list.Completed" disabled />
+                        </td>
+                        <td>@list.Id</td>
+                        <td>@list.Created</td>
+                        <td>@list.Changed</td>
+                        <td>
+                            <button class="btn btn-outline-info" @onclick="@(() => Navigate(list.Id))">
+                                Edit
+                            </button>
+                            <button class="btn btn-danger" @onclick="@(() => DeleteDoc(list.Id))">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private IEnumerable<ToDoList> lists;
+    private readonly string containerName = "ToDoList";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Container _container = _cosmosDb.GetContainer(containerName);
+        lists = await GetLists(_container);
+    }
+
+    protected async Task<IEnumerable<ToDoList>> GetLists(Container container)
+    {
+        return lists = await _cosmosDb.GetItemsAsync("SELECT * FROM c", container);
+    }
+
+    private async Task<IEnumerable<ToDoList>> DeleteDoc(string id)
+    {
+        Container _container = _cosmosDb.GetContainer(containerName);
+        try
+        {
+            await _container.DeleteItemAsync<ToDoList>(id, new PartitionKey(id));
+        }
+        catch (CosmosException)
+        {
+        }
+        return lists = await GetLists(_container);
+
+    }
+    // Navigation events
+
+    private void navigateToAdd()
+    {
+        navigation.NavigateTo("/addList");
+    }
+    private void Navigate(string id)
+    {
+        navigation.NavigateTo($"/edit/{id}");
+    }
+}
