@@ -10,6 +10,7 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MudBlazor.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -35,6 +36,9 @@ namespace GoussanMedia
             services.AddServerSideBlazor();
             services.AddHttpClient();
 
+            // Add MudBlazor Service
+            services.AddMudServices();
+
             // Add  Cosmos Db Service
             services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync().GetAwaiter().GetResult());
 
@@ -44,7 +48,7 @@ namespace GoussanMedia
                 //builder.AddBlobServiceClient(Configuration["GoussanStorage:blob"], preferMsi: true);
                 builder.AddQueueServiceClient(Configuration["GoussanStorage:queue"], preferMsi: true);
             });
-            services.AddApplicationInsightsTelemetry(Configuration["APPINSIGHTS_CONNECTIONSTRING"]);
+            services.AddApplicationInsightsTelemetry(Configuration["AppInsightConString"]);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
