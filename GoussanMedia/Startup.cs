@@ -48,7 +48,7 @@ namespace GoussanMedia
                 //builder.AddBlobServiceClient(Configuration["GoussanStorage:blob"], preferMsi: true);
                 builder.AddQueueServiceClient(Configuration["GoussanStorage:queue"], preferMsi: true);
             });
-            services.AddApplicationInsightsTelemetry(Configuration["APPINSIGHTS_CONNECTIONSTRING"]);
+            services.AddApplicationInsightsTelemetry(Configuration["AppInsightConString"]);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

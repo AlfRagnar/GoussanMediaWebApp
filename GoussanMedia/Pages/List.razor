@@ -72,7 +72,6 @@ else
     private readonly string containerName = "ToDoList";
     private bool _loading = true;
     private string searchString1 = "";
-    private string searchString2 = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -101,7 +100,6 @@ else
     }
 
     private bool FilterFunction1(ToDoList toDoList) => FilterFunction(toDoList, searchString1);
-    private bool FilterFunction2(ToDoList toDoList) => FilterFunction(toDoList, searchString2);
 
     private bool FilterFunction(ToDoList toDoList, string searchString)
     {
