@@ -25,18 +25,42 @@ else
             <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         </ToolBarContent>
         <HeaderContent>
-            <MudTh>ID</MudTh>
-            <MudTh>Title</MudTh>
-            <MudTh>Description</MudTh>
-            <MudTh>Creation Date</MudTh>
-            <MudTh>Last Changed</MudTh>
-            <MudTh>Status</MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ToDoList, object>(x => x.Id)">
+                    ID
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ToDoList, object>(x => x.Name)">
+                    Title
+                </MudTableSortLabel>
+            </MudTh>
+            @*<MudTh>
+                <MudTableSortLabel SortBy="new Func<ToDoList, object>(x => x.Description)">
+                    Description
+                </MudTableSortLabel>
+            </MudTh>*@
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ToDoList, object>(x => x.Created)">
+                    Creation Date
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ToDoList, object>(x => x.Changed)">
+                    Last Changed
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ToDoList, object>(x => x.Completed)">
+                    Status
+                </MudTableSortLabel>
+            </MudTh>
             <MudTh></MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="ID">@context.Id</MudTd>
             <MudTd DataLabel="Title">@context.Name</MudTd>
-            <MudTd DataLabel="Description">@context.Description</MudTd>
+            @*<MudTd DataLabel="Description">@context.Description</MudTd>*@
             <MudTd DataLabel="Creation Date">@context.Created</MudTd>
             <MudTd DataLabel="Last Changed">@context.Changed</MudTd>
             @if (context.Completed)

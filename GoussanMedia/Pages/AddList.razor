@@ -13,34 +13,45 @@
 
 <EditForm Model="lists" OnValidSubmit="@CreateDoc">
     <DataAnnotationsValidator />
-    <label>
-        Document ID: @lists.Id
-    </label>
-    <br />
-    <br />
-    <label>
-        Document Title:
-        <InputText @bind-Value="lists.Name" />
-    </label>
-    <br />
-    <br />
-    <label>
-        Document Description:
-        <InputTextArea @bind-Value="lists.Description"></InputTextArea>
-    </label>
-    <br />
-    <br />
-    <label>
-        Completed:
-        <InputCheckbox @bind-Value="lists.Completed"></InputCheckbox>
-    </label>
-    <br />
-    <button class="btn btn-danger">Submit</button>
+    <MudCard>
+        <MudCardContent>
+            <MudTextField Label="Document ID"
+                          HelperText="This is the GUID of the Document" Value="lists.Id" Disabled="true"/>
+            <MudTextField Label="Document Title"
+                          HelperText="Choose a title for the document" @bind-Value="lists.Name" For="@(()=> lists.Name)" />
+            <MudTextField Label="Document Description"
+                          HelperText="Put in whatever content you want here" @bind-Value="lists.Description" For="@(()=> lists.Description)" />
+            <MudCheckBox @bind-Checked="lists.Completed" For="@(()=>lists.Completed)" />
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">Submit</MudButton>
+        </MudCardActions>
+    </MudCard>
+    <MudText Typo="Typo.body2" Align="Align.Center">
+        Fill out the form to create a new document.
+    </MudText>
+    <MudExpansionPanels>
+        <MudExpansionPanel Text="Show Validation Summary">
+            @if (success)
+            {
+                <MudText Color="Color.Success">
+                    Success
+                </MudText>
+            }
+            else
+            {
+                <MudText Color="Color.Error">
+                    <ValidationSummary />
+                </MudText>
+            }
+        </MudExpansionPanel>
+    </MudExpansionPanels>
 </EditForm>
 
 @code {
     private ToDoList lists = new() { Id = Guid.NewGuid().ToString() };
     private readonly string containerName = "ToDoList";
+    bool success;
 
     private async void CreateDoc()
     {
@@ -50,6 +61,8 @@
         try
         {
             await _container.CreateItemAsync(lists, new PartitionKey(lists.Id));
+            success = true;
+            StateHasChanged();
         }
         catch (CosmosException ex)
         {

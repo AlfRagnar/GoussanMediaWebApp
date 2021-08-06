@@ -1,20 +1,18 @@
 ﻿@inherits LayoutComponentBase
 
 <MudThemeProvider />
-<MudDialogProvider
-                   FullWidth="true"
+<MudDialogProvider FullWidth="true"
                    MaxWidth="MaxWidth.ExtraSmall"
                    CloseButton="true"
                    DisableBackdropClick="true"
                    NoHeader="true"
-                   Position="DialogPosition.Center"
-                   />
+                   Position="DialogPosition.Center" />
 <MudSnackbarProvider />
 
 <MudLayout>
     <MudAppBar Color="Color.Primary" Fixed="true" Dense="true">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        Goussan Media Server App
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(() => DrawerToggle())" />
+        <MudText @onclick="@(() => DrawerToggle())" Style="cursor:pointer">Goussan Media Server App</MudText>
     </MudAppBar>
     <MudDrawer @bind-Open="@_drawerOpen">
         <NavMenu />
@@ -27,10 +25,11 @@
 </MudLayout>
 
 @code {
-    bool _drawerOpen = true;
+    bool _drawerOpen = false;
 
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+        StateHasChanged();
     }
 } 
