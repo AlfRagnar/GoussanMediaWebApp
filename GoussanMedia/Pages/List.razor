@@ -5,133 +5,151 @@
 
 @inject ICosmosDbService _cosmosDb
 @inject NavigationManager  navigation
+@inject ILogger<List> Logger
 
-@if (lists == null)
-{
-    <MudSkeleton />
-    <MudSkeleton Animation="Animation.False" />
-    <MudSkeleton Animation="Animation.Wave" />
-}
-else
-{
-    <MudButton @onclick="(()=> navigateToAdd())" Color="Color.Primary" Variant="Variant.Filled">
-        Add New Document
-    </MudButton>
+<MudContainer>
+    @if (videos == null)
+    {
+        <MudSkeleton />
+        <MudSkeleton Animation="Animation.False" />
+        <MudSkeleton Animation="Animation.Wave" />
+    }
+    else
+    {
+        <MudButton @onclick="(()=> navigateToAdd())" Color="Color.Primary" Variant="Variant.Filled">
+            Upload Video
+        </MudButton>
 
-    <MudTable Items="lists" Hover="true" Breakpoint="Breakpoint.Sm" Loading="_loading" LoadingProgressColor="Color.Info" Filter="new Func<ToDoList, bool>(FilterFunction1)">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">Tasks</MudText>
-            <MudSpacer />
-            <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        </ToolBarContent>
-        <HeaderContent>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<ToDoList, object>(x => x.Id)">
-                    ID
-                </MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<ToDoList, object>(x => x.Name)">
-                    Title
-                </MudTableSortLabel>
-            </MudTh>
-            @*<MudTh>
-                <MudTableSortLabel SortBy="new Func<ToDoList, object>(x => x.Description)">
-                    Description
-                </MudTableSortLabel>
-            </MudTh>*@
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<ToDoList, object>(x => x.Created)">
-                    Creation Date
-                </MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<ToDoList, object>(x => x.Changed)">
-                    Last Changed
-                </MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<ToDoList, object>(x => x.Completed)">
-                    Status
-                </MudTableSortLabel>
-            </MudTh>
-            <MudTh></MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="ID">@context.Id</MudTd>
-            <MudTd DataLabel="Title">@context.Name</MudTd>
-            @*<MudTd DataLabel="Description">@context.Description</MudTd>*@
-            <MudTd DataLabel="Creation Date">@context.Created</MudTd>
-            <MudTd DataLabel="Last Changed">@context.Changed</MudTd>
-            @if (context.Completed)
-                {
-                <MudTd DataLabel="Complete">Finished</MudTd>
-                }
-                else
-                {
-                <MudTd DataLabel="Complete">Incomplete</MudTd>
+        <MudTable Items="videos" Hover="true" Breakpoint="Breakpoint.Sm" Loading="_loading" LoadingProgressColor="Color.Info" Filter="new Func<Videos, bool>(FilterFunction1)">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Tasks</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Videos, object>(x => x.Id)">
+                        ID
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Videos, object>(x => x.Title)">
+                        Title
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Videos, object>(x => x.FileName)">
+                        FileName
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Videos, object>(x => x.Size)">
+                        Size
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Videos, object>(x => x.UploadDate)">
+                        Creation Date
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Videos, object>(x => x.LastModified)">
+                        Last Changed
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Videos, object>(x => x.Completed)">
+                        Status
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="ID">@context.Id</MudTd>
+                <MudTd DataLabel="Title">@context.Title</MudTd>
+                <MudTd DataLabel="FileName">@context.FileName</MudTd>
+                <MudTd DataLabel="Size">
+                    @CalcMB(context.Size) MB
+                </MudTd>
+                <MudTd DataLabel="Creation Date">@context.UploadDate</MudTd>
+                <MudTd DataLabel="Last Changed">@context.LastModified</MudTd>
+                @if (context.Completed)
+                    {
+                    <MudTd DataLabel="Complete">Finished</MudTd>
+                    }
+                    else
+                    {
+                    <MudTd DataLabel="Complete">Incomplete</MudTd>
 
-                }
-            <MudTd>
-                <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
-                    <MudIconButton @onclick="@(() => Navigate(context.Id))" Icon="@Icons.Material.Filled.EditNote" Color="Color.Primary">
-                        Save
-                    </MudIconButton>
-                    <MudIconButton @onclick="@(() => DeleteDoc(context.Id))" Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Secondary">
-                        Delete
-                    </MudIconButton>
-                </MudButtonGroup>
-            </MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager />
-        </PagerContent>
-    </MudTable>
-
-}
-
+                    }
+                <MudTd>
+                    <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+                        <MudIconButton @onclick="@(() => Navigate(context.Id))" Icon="@Icons.Material.Filled.EditNote" Color="Color.Primary">
+                            Save
+                        </MudIconButton>
+                        <MudIconButton @onclick="@(() => DeleteDoc(context.Id))" Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Secondary">
+                            Delete
+                        </MudIconButton>
+                    </MudButtonGroup>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
+</MudContainer>
 @code {
-    private IEnumerable<ToDoList> lists;
-    Container _container;
-    private readonly string containerName = "ToDoList";
+    private IEnumerable<Videos> videos;
+    private Container _container;
+    private readonly string containerName = Config.CosmosVideos;
     private bool _loading = true;
     private string searchString1 = "";
 
     protected override async Task OnInitializedAsync()
     {
         _container = _cosmosDb.GetContainer(containerName);
-        lists = await GetLists(_container);
+        videos = await GetLists(_container);
         _loading = false;
     }
 
-    protected async Task<IEnumerable<ToDoList>> GetLists(Container container)
+    private double CalcMB(long bytes)
     {
-        return lists = await _cosmosDb.GetItemsAsync("SELECT * FROM c", container);
+        double res = Math.Round(bytes / 1024d / 1024d, 2);
+
+        return res;
     }
 
-    private async Task<IEnumerable<ToDoList>> DeleteDoc(string id)
+    protected async Task<IEnumerable<Videos>> GetLists(Container container)
+    {
+        return videos = await _cosmosDb.GetVideos(container);
+    }
+
+    private async Task<IEnumerable<Videos>> DeleteDoc(string id)
     {
         _container = _cosmosDb.GetContainer(containerName);
         try
         {
-            await _container.DeleteItemAsync<ToDoList>(id, new PartitionKey(id));
+            await _container.DeleteItemAsync<Videos>(id, new PartitionKey(id));
         }
-        catch (CosmosException)
+        catch (CosmosException ex)
         {
+            Logger.LogError($"CosmosException: {ex.StatusCode} Error: {ex.Message}");
+
         }
-        return lists = await GetLists(_container);
+        return videos = await GetLists(_container);
 
     }
 
-    private bool FilterFunction1(ToDoList toDoList) => FilterFunction(toDoList, searchString1);
+    private bool FilterFunction1(Videos videos) => FilterFunction(videos, searchString1);
 
-    private bool FilterFunction(ToDoList toDoList, string searchString)
+    private bool FilterFunction(Videos videos, string searchString)
     {
         if (string.IsNullOrWhiteSpace(searchString))
             return true;
-        if (toDoList.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        if (videos.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if (toDoList.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        if (videos.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
         return false;
     }
@@ -140,7 +158,7 @@ else
 
     private void navigateToAdd()
     {
-        navigation.NavigateTo("/addList");
+        navigation.NavigateTo("/upload");
     }
     private void Navigate(string id)
     {

@@ -4,52 +4,72 @@
 @inject ICosmosDbService _cosmosDb
 @inject NavigationManager  navigation
 
-@if (list == null)
-{
-    <MudSkeleton />
-    <MudSkeleton Animation="Animation.False" />
-    <MudSkeleton Animation="Animation.Wave" />
-}
-else
-{
-<MudGrid>
-    <MudItem xs="12" sm="6" md="4">
-        <MudTextField @bind-Value="list.Name" Label="Title" Variant="Variant.Text"></MudTextField>
-    </MudItem>
-    <MudItem xs="12" sm="12" md="12">
-        <MudTextField T="string" Label="Multiline" Variant="Variant.Outlined" Text="@list.Description" Lines="5" />
-    </MudItem>
-    <MudItem xs="6">
-        <MudSelect Label="Complete" Margin="Margin.Dense" @bind-Value="list.Completed" Class="mt-4">
-            <MudSelectItem Value="true">Yes</MudSelectItem>
-            <MudSelectItem Value="false">No</MudSelectItem>
-        </MudSelect>
-    </MudItem>
-    <MudItem xs="12">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="@(() => EditList(list))">
-            Save
-        </MudButton>
-    </MudItem>
-    <MudItem xs="12">
-        <MudButton Variant="Variant.Filled" Color="Color.Secondary" @onclick="@(() => navigation.NavigateTo("/list"))">
-            Return
-        </MudButton>
-    </MudItem>
-    <MudItem xs="6">
-        <MudText>Created at: @list.Created</MudText>
-    </MudItem>
-    <MudItem xs="6">
-        <MudText>Last time Changed: @list.Changed</MudText>
-    </MudItem>
-</MudGrid>
-}
-
+<MudContainer>
+    @if (list == null)
+    {
+        <MudSkeleton />
+        <MudSkeleton Animation="Animation.False" />
+        <MudSkeleton Animation="Animation.Wave" />
+    }
+    else
+    {
+        <MudCard>
+            <MudCardContent>
+                <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudTextField T="string" @bind-Value="list.Title" Label="Title" Variant="Variant.Text" RequiredError="A Title is required!" />
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="12">
+                        <MudTextField T="string" Label="Multiline" Variant="Variant.Outlined" @bind-Text="list.Description" Lines="5" RequiredError="You need to include a description!" />
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudSelect Label="Complete" Margin="Margin.Dense" @bind-Value="list.Completed" Class="mt-4">
+                            <MudSelectItem Value="true">Yes</MudSelectItem>
+                            <MudSelectItem Value="false">No</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudText>Created at: @list.UploadDate</MudText>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudText>Last time Changed: @list.LastModified</MudText>
+                    </MudItem>
+                </MudForm>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="@(() => Save(list))" Disabled="@(!success)">
+                    Save
+                </MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" @onclick="@(() => navigation.NavigateTo("/list"))">
+                    Return
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+        <MudExpansionPanels>
+            <MudExpansionPanel Text="@($"Show Hidden Information for '{list.Title}'")">
+                <MudText Typo="Typo.h6">
+                    ID: @list.Id
+                </MudText>
+                <MudText Typo="Typo.body2">FileName: @list.FileName</MudText>
+                <MudText Typo="Typo.body2">Extension: @list.Extension</MudText>
+                <MudText Typo="Typo.body2">URL to Download: @list.BlobUri</MudText>
+                <MudText Typo="Typo.body2">Finished: @list.Completed</MudText>
+                <MudText Typo="Typo.body2">FileSize(bytes): @list.Size</MudText>
+                <MudText Typo="Typo.body2">Upload Date: @list.UploadDate</MudText>
+                <MudText Typo="Typo.body2">Last Modified: @list.LastModified</MudText>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    }
+</MudContainer>
 @code {
     [Parameter]
     public string id { get; set; }
-    private readonly string containerName = "ToDoList";
-    private ToDoList list;
+    private readonly string containerName = Config.CosmosVideos;
+    private Videos list;
+    MudForm form;
     private Container _container;
+    bool success;
+    string[] errors = { };
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,16 +77,15 @@ else
         list = await GetList(id, _container);
     }
 
-    protected async Task<ToDoList> GetList(string id, Container container)
+    protected async Task<Videos> GetList(string id, Container container)
     {
-        return list = await _cosmosDb.GetItemAsync(id, container);
+        return list = await _cosmosDb.GetVideoAsync(id, container);
     }
 
-    protected async void EditList(ToDoList list)
+    protected async void Save(Videos list)
     {
-        //Container _container = _cosmosDb.GetContainer(containerName);
-        list.Changed = DateTime.Now;
-        await _cosmosDb.UpdateItem(list, _container);
+        list.LastModified = DateTime.Now;
+        await _cosmosDb.UpdateVideo(list, _container);
         navigation.NavigateTo("/list");
     }
 }

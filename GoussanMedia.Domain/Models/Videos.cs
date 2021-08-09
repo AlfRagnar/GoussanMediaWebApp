@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.IO;
 
 namespace GoussanMedia.Domain.Models
 {
@@ -19,10 +18,11 @@ namespace GoussanMedia.Domain.Models
         public string FileName { get; set; }
 
         [JsonProperty(PropertyName = "bloburi")]
-        public Uri BlobUri { get; set; }
+        public string BlobUri { get; set; }
 
         [JsonProperty(PropertyName = "created")]
         public DateTime UploadDate { get; set; }
+
         [JsonProperty(PropertyName = "lastmodified")]
         public DateTimeOffset LastModified { get; set; }
 
@@ -31,6 +31,10 @@ namespace GoussanMedia.Domain.Models
 
         [JsonProperty(PropertyName = "extension")]
         public string Extension { get; set; }
+
         public int ErrorCode { get; set; }
+
+        [JsonProperty(PropertyName = "completed")]
+        public bool Completed { get; set; }
     }
 }

@@ -24,6 +24,16 @@ namespace GoussanMedia
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            Config.AzureStorageConnectionString = Configuration["GoussanStorage"];
+            Config.AzureCosmosConnectionString = Configuration["GoussanCosmos"];
+            Config.CosmosDBName = Configuration["CosmosDb:DatabaseName"];
+            Config.AzureStorageBlob = Configuration["GoussanStorage:blob"];
+            Config.AzureStorageQueue = Configuration["GoussanStorage:queue"];
+            Config.AzureAppInsight = Configuration["AppInsightConString"];
+            Config.CosmosDocuments = Configuration["CosmosDb:Containers:ToDoList:containerName"];
+            Config.CosmosVideos = Configuration["CosmosDb:Containers:Videos:containerName"];
+            Config.AppName = "GoussanMedia";
+            Config.AppRegion = Regions.WestEurope;
         }
 
         public IConfiguration Configuration { get; }
@@ -44,11 +54,12 @@ namespace GoussanMedia
 
             services.AddAzureClients(builder =>
             {
-                builder.AddBlobServiceClient(Configuration["GoussanStorage"], preferMsi: true);
+                builder.AddBlobServiceClient(Config.AzureStorageConnectionString, preferMsi: true);
                 //builder.AddBlobServiceClient(Configuration["GoussanStorage:blob"], preferMsi: true);
-                builder.AddQueueServiceClient(Configuration["GoussanStorage:queue"], preferMsi: true);
+                //builder.AddQueueServiceClient(Configuration["GoussanStorage:queue"], preferMsi: true);
+                builder.AddQueueServiceClient(Config.AzureStorageQueue, preferMsi: true);
             });
-            services.AddApplicationInsightsTelemetry(Configuration["AppInsightConString"]);
+            services.AddApplicationInsightsTelemetry(Config.AzureAppInsight);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -82,28 +93,24 @@ namespace GoussanMedia
             // Define Azure Cosmos Db Client options like preferred operation region and Application Name
             CosmosClientOptions options = new()
             {
-                ApplicationName = "GoussanMedia",
-                ApplicationRegion = Regions.WestEurope
+                ApplicationName = Config.AppName,
+                ApplicationRegion = Config.AppRegion
             };
-            // Create the new Cosmos Db Client
-            CosmosClient cosmosClient = new(Configuration["GoussanCosmos"], options);
-            // Get the predefined Database name from appsettings.json
-            string databaseName = Configuration["CosmosDb:DatabaseName"];
+            // Create the new Cosmos Database Client
+            CosmosClient cosmosClient = new(Config.AzureCosmosConnectionString, options);
+            // Get the predefined Database name from Config
+            string databaseName = Config.CosmosDBName;
             // Initialize the client
             CosmosDbService cosmosDbService = new(cosmosClient, databaseName);
             // Check if database exists
             await cosmosDbService.CheckDatabase(databaseName);
             // Create necessary containers to store META data in
             IEnumerable<IConfiguration> containerList = Configuration.GetSection("CosmosDb").GetSection("Containers").GetChildren();
-            foreach (IConfiguration item in containerList)
+            foreach (var item in containerList)
             {
                 string containerName = item.GetSection("containerName").Value;
                 string paritionKeyPath = item.GetSection("paritionKeyPath").Value;
-                ContainerResponse containerResponse = await cosmosDbService.CheckContainer(containerName, paritionKeyPath);
-                if (containerResponse.StatusCode != HttpStatusCode.OK)
-                {
-                    Trace.WriteLine(containerResponse);
-                }
+                await cosmosDbService.CheckContainer(containerName, paritionKeyPath);
             }
             return cosmosDbService;
         }
