@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GoussanMedia.Domain.Models
+namespace GoussanMedia.DataAccess
 {
-    class ListSummarry
+    public interface IBlobStorageService
     {
     }
 }

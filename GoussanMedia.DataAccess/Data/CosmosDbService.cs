@@ -13,7 +13,7 @@ namespace GoussanMedia.DataAccess.Data
         private readonly CosmosClient _client;
         private readonly Database _dbClient;
 
-        public CosmosDbService(CosmosClient dbClient, string databaseName) : base()
+        public CosmosDbService(CosmosClient dbClient, string databaseName)
         {
             _client = dbClient;
             _dbClient = dbClient.GetDatabase(databaseName);
@@ -49,20 +49,6 @@ namespace GoussanMedia.DataAccess.Data
             }
         }
 
-        public async Task AddItemAsync(ToDoList item, Container container)
-        {
-            try
-            {
-                await container.CreateItemAsync(item, new PartitionKey(item.Id));
-            }
-            catch (CosmosException)
-            {
-                throw;
-            }
-        }
-
-       
-
         public async Task AddVideo(Videos videos, Container container)
         {
             try
@@ -75,25 +61,11 @@ namespace GoussanMedia.DataAccess.Data
             }
         }
 
-        public async Task DeleteItemAsync(string id, string userId, Container container)
+        public async Task<Videos> GetVideoAsync(string id, Container container)
         {
             try
             {
-                await container.DeleteItemAsync<ToDoList>(id, new PartitionKey(userId));
-            }
-            catch (CosmosException)
-            {
-                throw;
-            }
-        }
-
-       
-
-        public async Task<ToDoList> GetItemAsync(string id, Container container)
-        {
-            try
-            {
-                ItemResponse<ToDoList> response = await container.ReadItemAsync<ToDoList>(id, new PartitionKey(id));
+                ItemResponse<Videos> response = await container.ReadItemAsync<Videos>(id, new PartitionKey(id));
                 return response.Resource;
             }
             catch (CosmosException)
@@ -102,41 +74,15 @@ namespace GoussanMedia.DataAccess.Data
             }
         }
 
-
-        public async Task<List<ToDoList>> GetMyItems(string userId, Container container)
-        {
-            List<ToDoList> MyList = new();
-            using (FeedIterator<ToDoList> results = container.GetItemQueryIterator<ToDoList>(
-                queryDefinition: null,
-                requestOptions: new QueryRequestOptions()
-                {
-                    PartitionKey = new PartitionKey(userId)
-                }))
-            {
-                while (results.HasMoreResults)
-                {
-                    FeedResponse<ToDoList> response = await results.ReadNextAsync();
-                    if (response.Diagnostics != null)
-                    {
-                        Console.WriteLine($" Diagnostics {response.Diagnostics}");
-                    }
-
-                    MyList.AddRange(response);
-                }
-            }
-            return MyList;
-        }
-
-        public async Task<IEnumerable<ToDoList>> GetItemsAsync(string queryString, Container container)
+        public async Task<IEnumerable<Videos>> GetVideos(Container container)
         {
             try
             {
-                FeedIterator<ToDoList> query = container.GetItemQueryIterator<ToDoList>(new QueryDefinition(queryString));
-                List<ToDoList> results = new();
-                while (query.HasMoreResults)
+                FeedIterator<Videos> documentsQuery = container.GetItemQueryIterator<Videos>(new QueryDefinition($"Select * from {container.Id}"));
+                List<Videos> results = new();
+                while (documentsQuery.HasMoreResults)
                 {
-                    FeedResponse<ToDoList> response = await query.ReadNextAsync();
-
+                    FeedResponse<Videos> response = await documentsQuery.ReadNextAsync();
                     results.AddRange(response.ToList());
                 }
                 return results;
@@ -146,7 +92,6 @@ namespace GoussanMedia.DataAccess.Data
                 throw;
             }
         }
-
 
         public async Task<IEnumerable<Videos>> GetUploadsAsync(string queryString, Container container)
         {
@@ -163,7 +108,7 @@ namespace GoussanMedia.DataAccess.Data
             }
         }
 
-        public async Task UpdateItem(ToDoList item, Container container)
+        public async Task UpdateVideo(Videos item, Container container)
         {
             try
             {
@@ -174,7 +119,6 @@ namespace GoussanMedia.DataAccess.Data
                 throw;
             }
         }
-
 
         public async Task<DatabaseResponse> CheckDatabase(string database)
         {
@@ -189,17 +133,9 @@ namespace GoussanMedia.DataAccess.Data
             }
         }
 
-
-
         public Task ListContainersInDatabase()
         {
             throw new NotImplementedException();
-        }
-
-        public void Dispose()
-        {
-            _client.Dispose();
-            GC.SuppressFinalize(this);
         }
 
         public Task AddVideoAsync(Videos video, Container container)

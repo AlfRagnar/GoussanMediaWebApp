@@ -1,64 +1,59 @@
 ﻿@page "/upload"
 @using System
-@using System.IO
-
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Logging
 @using Microsoft.Azure.Cosmos;
 @using Azure.Storage.Blobs
-@using Azure.Storage.Blobs.Specialized
 
 @inject ILogger<UploadFiles> Logger
 @inject IWebHostEnvironment Environment
 @inject ICosmosDbService _cosmosDb
 
-<h3>Upload Files to Azure Storage</h3>
+<MudContainer>
+    <MudText Typo="Typo.h3">Upload Files to Azure Storage</MudText>
 
-@if (isLoading)
-{
-    <p>Uploading...</p>
-}
-else
-{
-    <ul>
-        @foreach (var file in loadedFiles)
-        {
-            <li>
-                <ul>
-                    <li>Name: @file.Name</li>
-                    <li>Last modified: @file.LastModified.ToString()</li>
-                    <li>Size (bytes): @file.Size</li>
-                    <li>Content type: @file.ContentType</li>
-                </ul>
-            </li>
-        }
-    </ul>
-}
+    <MudText Typo="Typo.body2">@status</MudText>
+    <InputFile id="fileInput112" OnChange="LoadFiles" hidden multiple />
+    @if (isLoading)
+    {
+        <MudSkeleton />
+        <MudSkeleton Animation="Animation.False" />
+        <MudSkeleton Animation="Animation.Wave" />
+    }
+    else
+    {
+
+        <MudButton HtmlTag="label" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Filled.CloudUpload" for="fileInput112">
+            Upload your files
+        </MudButton>
+    }
+</MudContainer>
 
 @code {
     private List<IBrowserFile> loadedFiles = new();
     private List<Videos> videoResults = new();
-    private string containerName = "Videos";
-    private string blobContainer = "goussanmedia";
-
+    private string containerName = Config.CosmosVideos;
+    //private string blobContainer = "goussanmedia";
+    string status;
 
     private int maxAllowedFiles = 3;
-    private bool isLoading;
-    private long maxFileSize = 1024 * 1024 * 15;
+    private bool isLoading = true;
 
     protected override void OnInitialized()
     {
+        isLoading = false;
         base.OnInitialized();
     }
 
     private async Task LoadFiles(InputFileChangeEventArgs e)
     {
-        isLoading = false;
+        isLoading = true;
+        status = "";
         loadedFiles.Clear();
+        long maxFileSize = 1024 * 1024 * 50;
 
         foreach (IBrowserFile file in e.GetMultipleFiles(maxAllowedFiles))
         {
-
             try
             {
                 if (CheckFileType(file))
@@ -66,12 +61,26 @@ else
                     string filenameForStorage = Guid.NewGuid().ToString();
                     loadedFiles.Add(file);
 
+                    string connectionString = Config.AzureStorageConnectionString;
+
+                    BlobContainerClient blobContainer = new BlobContainerClient(connectionString, containerName);
+                    var createResponse = await blobContainer.CreateIfNotExistsAsync();
+                    if (createResponse != null && createResponse.GetRawResponse().Status == 201)
+                    {
+                        await blobContainer.SetAccessPolicyAsync(Azure.Storage.Blobs.Models.PublicAccessType.Blob);
+                    }
+
+                    var blob = blobContainer.GetBlobClient(filenameForStorage);
+                    //await blob.DeleteIfExistsAsync(Azure.Storage.Blobs.Models.DeleteSnapshotsOption.IncludeSnapshots);
+
                     // Azure Storage Service
-
-                    // Will throw an error if blob already exists, likely will not happen due to blob name being a new GUID each time
-                    // Check if file got uploaded, will return error if not
-
+                    using (var fs = file.OpenReadStream(maxFileSize))
+                    {
+                        await blob.UploadAsync(fs, new BlobHttpHeaders { ContentType = file.ContentType });
+                    }
+                    isLoading = true;
                     // Azure Cosmos DB
+                    Random random = new();
                     Videos newVideo = new()
                     {
                         Id = filenameForStorage,
@@ -79,18 +88,20 @@ else
                         FileName = file.Name,
                         Size = file.Size,
                         UploadDate = DateTime.Now,
-                        LastModified = file.LastModified
+                        LastModified = file.LastModified,
+                        BlobUri = blob.Uri.AbsoluteUri,
+                        Completed = false,
+                        Title = $"New file{random.Next()}"
                     };
-
                     Container container = _cosmosDb.GetContainer(containerName);
                     await container.CreateItemAsync(newVideo, new PartitionKey(newVideo.Id));
-
+                    status = $"Finished loading {file.Size / 1024 / 1024} MB from {file.Name}";
                 }
-
             }
             catch (Exception ex)
             {
                 Logger.LogError("File: {Filename} Error: {Error}", file.Name, ex.Message);
+                status = $"Internal server error: {ex}";
             }
         }
         isLoading = false;

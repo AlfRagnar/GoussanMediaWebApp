@@ -7,3 +7,7 @@ Azure Keyvault
 Azure Application Insights
 Azure SignalR Service
 Azure Storage
+
+
+Packages in Use:
+MudBlazor for styling

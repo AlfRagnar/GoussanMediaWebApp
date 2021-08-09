@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace GoussanMedia.DataAccess.Data
 {
-    public class BlobStorageService
+    public class BlobStorageService : IBlobStorageService
     {
         private readonly BlobServiceClient _blobServiceClient;
 
-        public BlobStorageService(BlobServiceClient blobServiceClient) : base()
+        public BlobStorageService(BlobServiceClient blobServiceClient)
         {
             _blobServiceClient = blobServiceClient;
         }
@@ -67,6 +67,11 @@ namespace GoussanMedia.DataAccess.Data
 
             await blobClient.UploadAsync(stream);
             return blobUri;
+        }
+
+        public Task Save(Stream fileStream, string name)
+        {
+            throw new NotImplementedException();
         }
     }
 }
