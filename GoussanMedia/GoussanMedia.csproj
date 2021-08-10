@@ -16,9 +16,11 @@
     <PackageReference Include="Azure.Storage.Blobs" Version="12.9.1" />
     <PackageReference Include="Azure.Storage.Files.Shares" Version="12.7.0" />
     <PackageReference Include="Azure.Storage.Queues" Version="12.7.0" />
+    <PackageReference Include="Blazored.Video" Version="1.0.0" />
     <PackageReference Include="Markdig" Version="0.25.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.17.0" />
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.20.1" />
+    <PackageReference Include="Microsoft.Azure.Management.Media" Version="4.0.0" />
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.9.2" />
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.1.0" />
     <PackageReference Include="MudBlazor" Version="5.1.0" />

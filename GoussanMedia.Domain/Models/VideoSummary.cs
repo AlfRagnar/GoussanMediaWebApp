@@ -19,7 +19,7 @@ namespace GoussanMedia.Domain.Models
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return (IEnumerator)GetEnumerator();
+            return GetEnumerator();
         }
 
         public VideoEnum GetEnumerator()

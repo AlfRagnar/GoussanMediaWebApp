@@ -1,6 +1,7 @@
 ﻿using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Microsoft.AspNetCore.Components.Forms;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,29 +12,42 @@ namespace GoussanMedia.DataAccess.Data
     public class BlobStorageService : IBlobStorageService
     {
         private readonly BlobServiceClient _blobServiceClient;
+        private readonly BlobContainerClient _blobContainerClient;
 
-        public BlobStorageService(BlobServiceClient blobServiceClient)
+        public BlobStorageService(BlobServiceClient blobServiceClient, string Container)
         {
             _blobServiceClient = blobServiceClient;
+            _blobContainerClient = GetContainer(Container).GetAwaiter().GetResult();
         }
 
-        public async Task<BlobContainerClient> GetContainer(string name = "Videos")
+        public async Task<BlobContainerClient> GetContainer(string name)
         {
             try
             {
                 BlobContainerClient container = await _blobServiceClient.CreateBlobContainerAsync(name);
+                var createResponse = await container.CreateIfNotExistsAsync();
+                if (createResponse != null && createResponse.GetRawResponse().Status == 201)
+                {
+                    await container.SetAccessPolicyAsync(PublicAccessType.Blob);
+                    return container;
+                }
                 if (await container.ExistsAsync())
                 {
                     return container;
                 }
             }
-            catch (RequestFailedException)
+            catch (RequestFailedException ex)
             {
+                if (ex.ErrorCode == BlobErrorCode.ContainerAlreadyExists)
+                {
+                    var container = _blobServiceClient.GetBlobContainerClient(name);
+                    return container;
+                }
             }
             return null;
         }
 
-        public static IAsyncEnumerable<Page<BlobHierarchyItem>> ListBlobsPublic(BlobContainerClient blobContainerClient, int? segmentSize)
+        public IAsyncEnumerable<Page<BlobHierarchyItem>> ListBlobsPublic(BlobContainerClient blobContainerClient, int? segmentSize)
         {
             try
             {
@@ -46,7 +60,7 @@ namespace GoussanMedia.DataAccess.Data
             }
         }
 
-        public static async Task<BlobProperties> GetBlobPropertiesAsync(BlobClient blob)
+        public async Task<BlobProperties> GetBlobPropertiesAsync(BlobClient blob)
         {
             try
             {
@@ -57,6 +71,37 @@ namespace GoussanMedia.DataAccess.Data
             {
                 return null;
             }
+        }
+
+        public BlobClient RetrieveBlobAsync(string id)
+        {
+            try
+            {
+                BlobClient blobClient = _blobContainerClient.GetBlobClient(id);
+                return blobClient;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task<string> UploadVideo(IBrowserFile file, string videoName, long maxFileSize = 1024 * 1024 * 50)
+        {
+            var blob = _blobContainerClient.GetBlobClient(videoName);
+
+            using (var fs = file.OpenReadStream(maxFileSize))
+            {
+                await blob.UploadAsync(fs, new BlobHttpHeaders { ContentType = file.ContentType });
+            }
+            string blobUri = blob.Uri.AbsoluteUri;
+            return blobUri;
+        }
+        public Response<bool> DeleteVideo(string videoName)
+        {
+            var blob = _blobContainerClient.GetBlobClient(videoName);
+            var res = blob.DeleteIfExists(DeleteSnapshotsOption.IncludeSnapshots);
+            return res;
         }
 
         public async Task<Uri> UploadFileToStorage(Stream stream, string container, string fileName)
