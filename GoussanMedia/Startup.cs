@@ -3,18 +3,20 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Queues;
 using GoussanMedia.DataAccess;
 using GoussanMedia.DataAccess.Data;
+using GoussanMedia.Domain;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Management.Media;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Client;
+using Microsoft.Rest;
 using MudBlazor.Services;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace GoussanMedia
@@ -32,6 +34,15 @@ namespace GoussanMedia
             Config.AzureAppInsight = Configuration["AppInsightConString"];
             Config.CosmosDocuments = Configuration["CosmosDb:Containers:ToDoList:containerName"];
             Config.CosmosVideos = Configuration["CosmosDb:Containers:Videos:containerName"];
+            Config.AadClientId = Configuration["AadClientId"];
+            Config.AadSecret = Configuration["AadSecret"];
+            Config.AadTenantDomain = Configuration["AzureAd:AadTenantDomain"];
+            Config.AadTenantId = Configuration["AadTenantId"];
+            Config.AccountName = Configuration["AADAccountName"];
+            Config.ResourceGroup = Configuration["AADResourceGroup"];
+            Config.SubscriptionId = Configuration["AADSubscriptionId"];
+            Config.ArmAadAudience = Configuration["AzureAd:ArmAadAudience"];
+            Config.ArmEndpoint = Configuration["AzureAd:ArmEndpoint"];
             Config.AppName = "GoussanMedia";
             Config.AppRegion = Regions.WestEurope;
         }
@@ -51,12 +62,14 @@ namespace GoussanMedia
 
             // Add  Cosmos Db Service
             services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync().GetAwaiter().GetResult());
+            // Add Own Service Interface for Blob Storage
+            services.AddSingleton<IBlobStorageService>(InitializeStorageClientInstance());
+            // Add service instance for Azure Media Services
+            services.AddSingleton<IAzMediaService>(InitializeMediaService().GetAwaiter().GetResult());
 
             services.AddAzureClients(builder =>
             {
                 builder.AddBlobServiceClient(Config.AzureStorageConnectionString, preferMsi: true);
-                //builder.AddBlobServiceClient(Configuration["GoussanStorage:blob"], preferMsi: true);
-                //builder.AddQueueServiceClient(Configuration["GoussanStorage:queue"], preferMsi: true);
                 builder.AddQueueServiceClient(Config.AzureStorageQueue, preferMsi: true);
             });
             services.AddApplicationInsightsTelemetry(Config.AzureAppInsight);
@@ -113,6 +126,45 @@ namespace GoussanMedia
                 await cosmosDbService.CheckContainer(containerName, paritionKeyPath);
             }
             return cosmosDbService;
+        }
+
+        private static BlobStorageService InitializeStorageClientInstance()
+        {
+            // Create the new Blob Service Client
+            BlobServiceClient blobService = new(Config.AzureStorageConnectionString);
+            // Get the predefined Container name from Config
+            string container = Config.CosmosVideos;
+            // Initialize the client
+            BlobStorageService storageService = new(blobService, container);
+            return storageService;
+        }
+
+        private static async Task<AzMediaService> InitializeMediaService()
+        {
+            // Create the new Azure Media Service Client
+            ServiceClientCredentials serviceClientCredentialscredentials = await GetCredentialsAsync();
+            AzureMediaServicesClient azureMediaServicesClientservicesClient = new(serviceClientCredentialscredentials) { SubscriptionId = Config.SubscriptionId };
+            // Initialize the client
+            AzMediaService azMediaService = new(azureMediaServicesClientservicesClient);
+            return azMediaService;
+        }
+
+        private static async Task<ServiceClientCredentials> GetCredentialsAsync()
+        {
+            // Use ConfidentialClientApplicationBuilder.AcquireTokenForClient to get a token using a service principal with symmetric key
+            string TokenType = "Bearer";
+            var scopes = new[] { Config.ArmAadAudience + "/.default" };
+
+            var app = ConfidentialClientApplicationBuilder.Create(Config.AadClientId)
+                .WithClientSecret(Config.AadSecret)
+                .WithAuthority(AzureCloudInstance.AzurePublic, Config.AadTenantId)
+                .Build();
+
+            var authResult = await app.AcquireTokenForClient(scopes)
+                                                     .ExecuteAsync()
+                                                     .ConfigureAwait(false);
+
+            return new TokenCredentials(authResult.AccessToken, TokenType);
         }
     }
 

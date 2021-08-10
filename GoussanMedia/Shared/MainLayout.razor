@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager navigate
 
 <MudThemeProvider />
 <MudDialogProvider FullWidth="true"
@@ -12,7 +13,7 @@
 <MudLayout>
     <MudAppBar Color="Color.Primary" Fixed="true" Dense="true">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(() => DrawerToggle())" />
-        <MudText @onclick="@(() => DrawerToggle())" Style="cursor:pointer">Goussan Media Server App</MudText>
+        <MudText @onclick="@(() => navigate.NavigateTo("/") )" Style="cursor:pointer">Goussan Media Server App</MudText>
     </MudAppBar>
     <MudDrawer @bind-Open="@_drawerOpen">
         <NavMenu />

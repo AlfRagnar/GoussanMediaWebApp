@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -10,7 +10,9 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.9.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.8" />
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.20.1" />
+    <PackageReference Include="Microsoft.Azure.Management.Media" Version="4.0.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Core" Version="3.0.27" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.CosmosDB" Version="3.0.10" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="3.0.12" />
@@ -18,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GoussanMedia.Domain\GoussanMedia.Domain.csproj" />
+	  <ProjectReference Include="..\GoussanMedia.Domain\GoussanMedia.Domain.csproj" />
   </ItemGroup>
 
 </Project>

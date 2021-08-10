@@ -1,6 +1,5 @@
 ﻿@page "/Edit/{id}"
 
-@using Microsoft.Azure.Cosmos;
 @inject ICosmosDbService _cosmosDb
 @inject NavigationManager  navigation
 
@@ -20,7 +19,7 @@
                         <MudTextField T="string" @bind-Value="list.Title" Label="Title" Variant="Variant.Text" RequiredError="A Title is required!" />
                     </MudItem>
                     <MudItem xs="12" sm="12" md="12">
-                        <MudTextField T="string" Label="Multiline" Variant="Variant.Outlined" @bind-Text="list.Description" Lines="5" RequiredError="You need to include a description!" />
+                        <MudTextField T="string" Label="Description" Variant="Variant.Outlined" @bind-Text="list.Description" Lines="5" RequiredError="You need to include a description!" />
                     </MudItem>
                     <MudItem xs="6">
                         <MudSelect Label="Complete" Margin="Margin.Dense" @bind-Value="list.Completed" Class="mt-4">
