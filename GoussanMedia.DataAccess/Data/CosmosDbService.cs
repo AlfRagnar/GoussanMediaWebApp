@@ -1,4 +1,5 @@
-﻿using GoussanMedia.Domain.Models;
+﻿using GoussanMedia.Domain;
+using GoussanMedia.Domain.Models;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using System;
@@ -108,8 +109,16 @@ namespace GoussanMedia.DataAccess.Data
             }
         }
 
-        public async Task UpdateVideo(Videos item, Container container)
+        public async Task UpdateVideo(Videos item, string containerName)
         {
+            Container container;
+            if (string.IsNullOrEmpty(containerName))
+            {
+                container = GetContainer(Config.CosmosVideos);
+            } else
+            {
+                container = GetContainer(containerName);
+            }
             try
             {
                 await container.UpsertItemAsync(item, new PartitionKey(item.Id));

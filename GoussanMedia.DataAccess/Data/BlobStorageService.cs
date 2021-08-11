@@ -20,11 +20,11 @@ namespace GoussanMedia.DataAccess.Data
             _blobContainerClient = GetContainer(Container).GetAwaiter().GetResult();
         }
 
-        public async Task<BlobContainerClient> GetContainer(string name)
+        public async Task<BlobContainerClient> GetContainer(string ID)
         {
             try
             {
-                BlobContainerClient container = await _blobServiceClient.CreateBlobContainerAsync(name);
+                BlobContainerClient container = await _blobServiceClient.CreateBlobContainerAsync(ID);
                 var createResponse = await container.CreateIfNotExistsAsync();
                 if (createResponse != null && createResponse.GetRawResponse().Status == 201)
                 {
@@ -40,7 +40,7 @@ namespace GoussanMedia.DataAccess.Data
             {
                 if (ex.ErrorCode == BlobErrorCode.ContainerAlreadyExists)
                 {
-                    var container = _blobServiceClient.GetBlobContainerClient(name);
+                    var container = _blobServiceClient.GetBlobContainerClient(ID);
                     return container;
                 }
             }

@@ -14,7 +14,7 @@ namespace GoussanMedia.DataAccess
 
         Task AddVideo(Videos videos, Container container);
 
-        Task UpdateVideo(Videos item, Container container);
+        Task UpdateVideo(Videos item, string container = null);
 
         // META CRUD OPERATIONS
         Task<DatabaseResponse> CheckDatabase(string database);

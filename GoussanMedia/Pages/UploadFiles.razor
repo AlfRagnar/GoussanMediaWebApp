@@ -4,10 +4,10 @@
 
 @inject ILogger<UploadFiles> Logger
 @inject ICosmosDbService _cosmosDb
-@inject IBlobStorageService _storageService
+@inject IAzMediaService _AMS
 
 <MudContainer>
-    <MudText Typo="Typo.h3">Upload Files to Azure Storage</MudText>
+    <MudText Typo="Typo.h3">Upload Files to Azure Media Services to create an Asset that is stored in Azure Blob Storage</MudText>
 
     <MudText Typo="Typo.body2">@status</MudText>
     <InputFile id="fileInput112" OnChange="LoadFiles" hidden multiple />
@@ -56,7 +56,8 @@
                 if (CheckFileType(file))
                 {
                     loadedFiles.Add(file);
-                    string filenameForStorage = Guid.NewGuid().ToString();
+                    var uid = Regex.Replace(Convert.ToBase64String(Guid.NewGuid().ToByteArray()), "[/+=]", "");
+                    string filenameForStorage = uid;
                     Random random = new();
                     Videos newVideo = new()
                     {
@@ -71,11 +72,12 @@
                     };
 
                     // Upload video with Azure Storage Service, the function returns a string containing the URI
-                    newVideo.BlobUri = await _storageService.UploadVideo(file, filenameForStorage, maxFileSize);
+                    Videos response = await _AMS.CreateAsset(file, newVideo, maxFileSize);
+
 
                     // Azure Cosmos DB Operations
                     Container container = _cosmosDb.GetContainer(containerName);
-                    var res = await container.CreateItemAsync(newVideo, new PartitionKey(newVideo.Id));
+                    var res = await container.CreateItemAsync(response, new PartitionKey(response.Id));
                     status = $"Finished uploading {Math.Round(file.Size / 1024d / 1024d)} MB from {file.Name}";
                 }
             }
