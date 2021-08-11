@@ -4,7 +4,7 @@
 @inject NavigationManager  navigation
 
 <MudContainer>
-    @if (list == null)
+    @if (video == null)
     {
         <MudSkeleton />
         <MudSkeleton Animation="Animation.False" />
@@ -16,27 +16,27 @@
             <MudCardContent>
                 <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
                     <MudItem xs="12" sm="6" md="4">
-                        <MudTextField T="string" @bind-Value="list.Title" Label="Title" Variant="Variant.Text" RequiredError="A Title is required!" />
+                        <MudTextField T="string" @bind-Value="video.Title" Label="Title" Variant="Variant.Text" RequiredError="A Title is required!" />
                     </MudItem>
                     <MudItem xs="12" sm="12" md="12">
-                        <MudTextField T="string" Label="Description" Variant="Variant.Outlined" @bind-Text="list.Description" Lines="5" RequiredError="You need to include a description!" />
+                        <MudTextField T="string" Label="Description" Variant="Variant.Outlined" @bind-Text="video.Description" Lines="5" RequiredError="You need to include a description!" />
                     </MudItem>
                     <MudItem xs="6">
-                        <MudSelect Label="Complete" Margin="Margin.Dense" @bind-Value="list.Completed" Class="mt-4">
+                        <MudSelect Label="Complete" Margin="Margin.Dense" @bind-Value="video.Completed" Class="mt-4">
                             <MudSelectItem Value="true">Yes</MudSelectItem>
                             <MudSelectItem Value="false">No</MudSelectItem>
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="6">
-                        <MudText>Created at: @list.UploadDate</MudText>
+                        <MudText>Created at: @video.UploadDate</MudText>
                     </MudItem>
                     <MudItem xs="6">
-                        <MudText>Last time Changed: @list.LastModified</MudText>
+                        <MudText>Last time Changed: @video.LastModified</MudText>
                     </MudItem>
                 </MudForm>
             </MudCardContent>
             <MudCardActions>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="@(() => Save(list))" Disabled="@(!success)">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="@(() => Save(video))" Disabled="@(!success)">
                     Save
                 </MudButton>
                 <MudButton Variant="Variant.Filled" Color="Color.Secondary" @onclick="@(() => navigation.NavigateTo("/list"))">
@@ -45,17 +45,17 @@
             </MudCardActions>
         </MudCard>
         <MudExpansionPanels>
-            <MudExpansionPanel Text="@($"Show Hidden Information for '{list.Title}'")">
+            <MudExpansionPanel Text="@($"Show Hidden Information for '{video.Title}'")">
                 <MudText Typo="Typo.h6">
-                    ID: @list.Id
+                    ID: @video.Id
                 </MudText>
-                <MudText Typo="Typo.body2">FileName: @list.FileName</MudText>
-                <MudText Typo="Typo.body2">Extension: @list.Extension</MudText>
-                <MudText Typo="Typo.body2">URL to Download: @list.BlobUri</MudText>
-                <MudText Typo="Typo.body2">Finished: @list.Completed</MudText>
-                <MudText Typo="Typo.body2">FileSize(bytes): @list.Size</MudText>
-                <MudText Typo="Typo.body2">Upload Date: @list.UploadDate</MudText>
-                <MudText Typo="Typo.body2">Last Modified: @list.LastModified</MudText>
+                <MudText Typo="Typo.body2">FileName: @video.FileName</MudText>
+                <MudText Typo="Typo.body2">Extension: @video.Extension</MudText>
+                <MudText Typo="Typo.body2">URL to Download: @video.BlobUri</MudText>
+                <MudText Typo="Typo.body2">Finished: @video.Completed</MudText>
+                <MudText Typo="Typo.body2">FileSize(bytes): @video.Size</MudText>
+                <MudText Typo="Typo.body2">Upload Date: @video.UploadDate</MudText>
+                <MudText Typo="Typo.body2">Last Modified: @video.LastModified</MudText>
             </MudExpansionPanel>
         </MudExpansionPanels>
     }
@@ -64,7 +64,7 @@
     [Parameter]
     public string id { get; set; }
     private readonly string containerName = Config.CosmosVideos;
-    private Videos list;
+    private Videos video;
     MudForm form;
     private Container _container;
     bool success;
@@ -73,18 +73,18 @@
     protected override async Task OnInitializedAsync()
     {
         _container = _cosmosDb.GetContainer(containerName);
-        list = await GetList(id, _container);
+        video = await GetList(id, _container);
     }
 
     protected async Task<Videos> GetList(string id, Container container)
     {
-        return list = await _cosmosDb.GetVideoAsync(id, container);
+        return video = await _cosmosDb.GetVideoAsync(id, container);
     }
 
-    protected async void Save(Videos list)
+    protected async void Save(Videos video)
     {
-        list.LastModified = DateTime.Now;
-        await _cosmosDb.UpdateVideo(list, _container);
+        video.LastModified = DateTime.Now;
+        await _cosmosDb.UpdateVideo(video);
         navigation.NavigateTo("/list");
     }
 }

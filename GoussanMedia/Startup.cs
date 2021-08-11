@@ -142,10 +142,17 @@ namespace GoussanMedia
         private static async Task<AzMediaService> InitializeMediaService()
         {
             // Create the new Azure Media Service Client
-            ServiceClientCredentials serviceClientCredentialscredentials = await GetCredentialsAsync();
-            AzureMediaServicesClient azureMediaServicesClientservicesClient = new(serviceClientCredentialscredentials) { SubscriptionId = Config.SubscriptionId };
+            ServiceClientCredentials serviceClientCredentials = await GetCredentialsAsync();
+            AzureMediaServicesClient azureMediaServicesClient = new(serviceClientCredentials) { SubscriptionId = Config.SubscriptionId };
             // Initialize the client
-            AzMediaService azMediaService = new(azureMediaServicesClientservicesClient);
+            AzMediaService azMediaService = new(azureMediaServicesClient);
+
+            // Ensure streaming endpoint is online
+            _ = await azMediaService.EnsureStreamingEndpoint();
+
+            // One time Task to ensure that I have the desired encoding available
+            _ = await azMediaService.GetOrCreateTransformAsync();
+
             return azMediaService;
         }
 
@@ -159,12 +166,10 @@ namespace GoussanMedia
                 .WithClientSecret(Config.AadSecret)
                 .WithAuthority(AzureCloudInstance.AzurePublic, Config.AadTenantId)
                 .Build();
+            var authResult = await app.AcquireTokenForClient(scopes).ExecuteAsync().ConfigureAwait(false);
 
-            var authResult = await app.AcquireTokenForClient(scopes)
-                                                     .ExecuteAsync()
-                                                     .ConfigureAwait(false);
-
-            return new TokenCredentials(authResult.AccessToken, TokenType);
+            var token = new TokenCredentials(authResult.AccessToken, TokenType);
+            return token;
         }
     }
 

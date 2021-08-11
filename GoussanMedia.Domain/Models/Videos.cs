@@ -8,6 +8,9 @@ namespace GoussanMedia.Domain.Models
         [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
 
+        [JsonProperty(PropertyName = "assetID")]
+        public string AssetId { get; set; }
+
         [JsonProperty(PropertyName = "title")]
         public string Title { get; set; }
 
@@ -19,6 +22,12 @@ namespace GoussanMedia.Domain.Models
 
         [JsonProperty(PropertyName = "bloburi")]
         public string BlobUri { get; set; }
+
+        [JsonProperty(PropertyName = "locator")]
+        public string Locator { get; set; }
+
+        [JsonProperty(PropertyName = "streamingurl")]
+        public string StreamingUrl { get; set; }
 
         [JsonProperty(PropertyName = "created")]
         public DateTime UploadDate { get; set; }
@@ -32,9 +41,13 @@ namespace GoussanMedia.Domain.Models
         [JsonProperty(PropertyName = "extension")]
         public string Extension { get; set; }
 
-        public int ErrorCode { get; set; }
-
         [JsonProperty(PropertyName = "completed")]
         public bool Completed { get; set; }
+
+        [JsonProperty(PropertyName = "processed")]
+        public bool Processed { get; set; }
+
+        [JsonProperty(PropertyName = "processing")]
+        public bool Processing { get; set; }
     }
 }
