@@ -8,8 +8,8 @@ namespace GoussanMedia.Domain.Models
         [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
 
-        [JsonProperty(PropertyName = "assetID")]
-        public string AssetId { get; set; }
+        [JsonProperty(PropertyName = "outputAsset")]
+        public string OutputAsset { get; set; }
 
         [JsonProperty(PropertyName = "title")]
         public string Title { get; set; }
@@ -41,13 +41,7 @@ namespace GoussanMedia.Domain.Models
         [JsonProperty(PropertyName = "extension")]
         public string Extension { get; set; }
 
-        [JsonProperty(PropertyName = "completed")]
-        public bool Completed { get; set; }
-
-        [JsonProperty(PropertyName = "processed")]
-        public bool Processed { get; set; }
-
-        [JsonProperty(PropertyName = "processing")]
-        public bool Processing { get; set; }
+        [JsonProperty(PropertyName = "status")]
+        public string Status { get; set; }
     }
 }
