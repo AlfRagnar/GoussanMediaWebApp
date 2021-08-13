@@ -13,9 +13,9 @@ using System.Linq;
 
 namespace GoussanFunction
 {
-    public static class PushEvent
+    public static class Scheduled
     {
-        [FunctionName("PushEvent")]
+        [FunctionName("Scheduled")]
         public static void Run(
             [EventGridTrigger] EventGridEvent gridEvent,
             [CosmosDB(databaseName: "GoussanDatabase", collectionName: "videos", ConnectionStringSetting = "CosmosDbConnectionString")] DocumentClient client,

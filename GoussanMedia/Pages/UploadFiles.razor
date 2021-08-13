@@ -56,8 +56,7 @@
                 if (CheckFileType(file))
                 {
                     loadedFiles.Add(file);
-                    var uid = Regex.Replace(Convert.ToBase64String(Guid.NewGuid().ToByteArray()), "[/+=]", "");
-                    string filenameForStorage = uid;
+                    string filenameForStorage = Regex.Replace(Convert.ToBase64String(Guid.NewGuid().ToByteArray()), "[/+=]", "");
                     Random random = new();
                     Videos newVideo = new()
                     {
