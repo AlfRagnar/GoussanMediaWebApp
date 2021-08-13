@@ -58,7 +58,7 @@
                     </MudTableSortLabel>
                 </MudTh>
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<Videos, object>(x => x.Completed)">
+                    <MudTableSortLabel SortBy="new Func<Videos, object>(x => x.Status)">
                         Status
                     </MudTableSortLabel>
                 </MudTh>
@@ -73,15 +73,7 @@
                 </MudTd>
                 <MudTd DataLabel="Creation Date">@context.UploadDate</MudTd>
                 <MudTd DataLabel="Last Changed">@context.LastModified</MudTd>
-                @if (context.Completed)
-                    {
-                    <MudTd DataLabel="Complete">Finished</MudTd>
-                    }
-                    else
-                    {
-                    <MudTd DataLabel="Complete">Incomplete</MudTd>
-
-                    }
+                <MudTd DataLabel="Status">@context.Status</MudTd>
                 <MudTd>
                     <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
                         <MudIconButton @onclick="@(() => Navigate(context.Id))" Icon="@Icons.Material.Filled.EditNote" Color="Color.Primary">
@@ -126,7 +118,7 @@
 
     private async Task<IEnumerable<Videos>> DeleteDoc(string id)
     {
-        var res = _blobService.DeleteVideo(id);
+        //var res = _blobService.DeleteVideo(id);
 
         _container = _cosmosDb.GetContainer(containerName);
         try

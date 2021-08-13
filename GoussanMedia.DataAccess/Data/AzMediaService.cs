@@ -39,31 +39,23 @@ namespace GoussanMedia.DataAccess.Data
             Uri sasUri = new(response.AssetContainerSasUrls.First());
 
             // Upload the file to Azure Blob Storage with the SAS URI from Azure Media Services
-            bool upload = await UploadFile(fileToUpload, asset.Name, sasUri, maxFileSize);
-            if (!upload)
-            {
-                return null;
-            }
+            _ = await UploadFile(fileToUpload, asset.Name, sasUri, maxFileSize);
+
             Asset outputAsset = await CreateOutputAsset(asset.Name);
 
-            Job job = await SubmitJobAsync(asset.Name, outputAsset.Name);
-            if (job.State != JobState.Finished)
-            {
-                videos.Processed = false;
-                videos.Processing = true;
-            }
+            _ = await SubmitJobAsync(asset.Name, outputAsset.Name);
 
             StreamingLocator locator = await CreateStreamingLocatorAsync(outputAsset.Name);
             videos.Locator = locator.AssetName;
-            videos.AssetId = outputAsset.Name;
-
+            videos.OutputAsset = outputAsset.Name;
             return videos;
         }
 
-        private static async Task<bool> UploadFile(IBrowserFile file, string fileName, Uri uri, long maxFileSize)
+        private static async Task<Response<BlobContentInfo>> UploadFile(IBrowserFile file, string fileName, Uri uri, long maxFileSize)
         {
             try
             {
+                Response<BlobContentInfo> response;
                 // Create the blob container client using the SAS URI
                 BlobContainerClient blobContainerClient = new(uri);
                 // Create the blob client
@@ -72,13 +64,13 @@ namespace GoussanMedia.DataAccess.Data
                 using (var fs = file.OpenReadStream(maxFileSize))
                 {
                     // Upload data to Azure Blob Storage
-                    await blob.UploadAsync(fs);
+                    response = await blob.UploadAsync(fs);
                 }
-                return true;
+                return response;
             }
             catch (RequestFailedException)
             {
-                return false;
+                return null;
             }
         }
 
@@ -109,9 +101,7 @@ namespace GoussanMedia.DataAccess.Data
             if (outputAsset != null)
             {
                 // Name collision! time to create a new unique name for the asset
-                var uid = Regex.Replace(Convert.ToBase64String(Guid.NewGuid().ToByteArray()), "[/+=]", "");
-
-                string unique = $"-{uid:N}";
+                string unique = $"-Encoded";
                 outputAssetName += unique;
             }
             // Create the Asset for the encoding Job to be written to
@@ -177,10 +167,7 @@ namespace GoussanMedia.DataAccess.Data
             return transform;
         }
 
-        
-
         // Need to create a Streaming Locator for the specified asset to be available for playback for clients.
-
         public async Task<StreamingLocator> CreateStreamingLocatorAsync(string assetName, string locatorName = null)
         {
             if (string.IsNullOrEmpty(locatorName))

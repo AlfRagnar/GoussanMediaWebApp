@@ -15,22 +15,19 @@
         <MudCard>
             <MudCardContent>
                 <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
-                    <MudItem xs="12" sm="6" md="4">
+                    <MudItem>
                         <MudTextField T="string" @bind-Value="video.Title" Label="Title" Variant="Variant.Text" RequiredError="A Title is required!" />
                     </MudItem>
-                    <MudItem xs="12" sm="12" md="12">
+                    <MudItem>
                         <MudTextField T="string" Label="Description" Variant="Variant.Outlined" @bind-Text="video.Description" Lines="5" RequiredError="You need to include a description!" />
                     </MudItem>
-                    <MudItem xs="6">
-                        <MudSelect Label="Complete" Margin="Margin.Dense" @bind-Value="video.Completed" Class="mt-4">
-                            <MudSelectItem Value="true">Yes</MudSelectItem>
-                            <MudSelectItem Value="false">No</MudSelectItem>
-                        </MudSelect>
+                    <MudItem>
+                        <MudText>Current status: @video.Status</MudText>
                     </MudItem>
-                    <MudItem xs="6">
+                    <MudItem>
                         <MudText>Created at: @video.UploadDate</MudText>
                     </MudItem>
-                    <MudItem xs="6">
+                    <MudItem>
                         <MudText>Last time Changed: @video.LastModified</MudText>
                     </MudItem>
                 </MudForm>
@@ -52,7 +49,7 @@
                 <MudText Typo="Typo.body2">FileName: @video.FileName</MudText>
                 <MudText Typo="Typo.body2">Extension: @video.Extension</MudText>
                 <MudText Typo="Typo.body2">URL to Download: @video.BlobUri</MudText>
-                <MudText Typo="Typo.body2">Finished: @video.Completed</MudText>
+                <MudText Typo="Typo.body2">Status: @video.Status</MudText>
                 <MudText Typo="Typo.body2">FileSize(bytes): @video.Size</MudText>
                 <MudText Typo="Typo.body2">Upload Date: @video.UploadDate</MudText>
                 <MudText Typo="Typo.body2">Last Modified: @video.LastModified</MudText>

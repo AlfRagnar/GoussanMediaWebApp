@@ -1,68 +1,11 @@
 ﻿@page "/"
 
-@using Blazored.Video
-@using Blazored.Video.Support
-@using Microsoft.AspNetCore.Mvc 
-@inject ICosmosDbService _cosmosDb
-@inject IBlobStorageService _azureBlob
 
 <MudContainer>
-    @if (_loading)
-    {
-        <MudSkeleton />
-        <MudSkeleton Animation="Animation.False" />
-        <MudSkeleton Animation="Animation.Wave" />
-    }
-    else
-    {
-            <MudText>
-                This is where videos will be displayed
-            </MudText>
-    }
+    <MudText>
+        This is where videos will be displayed
+    </MudText>
 </MudContainer>
 @code{
-    private readonly string containerName = Config.CosmosVideos;
-    private Container _container;
-    private IEnumerable<Videos> videos;
-    private bool _loading = true;
-
-    protected override async Task OnInitializedAsync()
-    {
-        _container = _cosmosDb.GetContainer(containerName);
-        videos = await Getlist(_container);
-        _loading = false;
-    }
-
-    private async Task<IEnumerable<Videos>> Getlist(Container container)
-    {
-        var res = await _cosmosDb.GetVideos(container);
-        return res;
-    }
-    void OnTimeUpdate(VideoState state)
-    {
-        var url = state.CurrentSrc;
-        var currentTime = state.CurrentTime;
-        // do something with this
-    }
-    void OnPlay(VideoState state)
-    {
-        var url = state.CurrentSrc;
-        // do something with this
-    }
-    private FileStreamResult getVideo(Videos video)
-    {
-
-        var cloudBlob =  _azureBlob.RetrieveBlobAsync(video.Id);
-        var stream = new MemoryStream();
-
-        cloudBlob.DownloadToAsync(stream);
-
-        // Decompression of Stream here
-
-        var result = new FileStreamResult(stream, video.Extension);
-        result.EnableRangeProcessing = true;
-
-        return result;
-    }
 
 }
