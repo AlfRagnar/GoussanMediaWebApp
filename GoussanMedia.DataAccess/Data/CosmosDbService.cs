@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
+using Nito.AsyncEx.Synchronous;
 
 namespace GoussanMedia.DataAccess.Data
 {
@@ -90,7 +92,61 @@ namespace GoussanMedia.DataAccess.Data
             }
             catch (CosmosException)
             {
-                throw;
+                return null;
+            }
+            finally
+            {
+            }
+        }
+
+        public IEnumerable<Videos> GetStreamingVideos(Container container)
+        {
+            try
+            {
+                List<Videos> result = new();
+                QueryDefinition queryDefinition = new QueryDefinition($"SELECT * FROM c WHERE c.status = Finished");
+                using (FeedIterator<Videos> setIterator = container.GetItemLinqQueryable<Videos>().Where(x => x.Status == "Finished").ToFeedIterator<Videos>())
+                {
+                    while (setIterator.HasMoreResults)
+                    {
+                        var task = setIterator.ReadNextAsync();
+                        var taskResult = task.WaitAndUnwrapException();
+                        foreach (var item in taskResult)
+                        {
+                            result.Add(item);
+                        }
+                    }
+                }
+                return result;
+            }
+            catch (CosmosException ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
+        public async Task<IEnumerable<Videos>> GetStreamingVideosAsync(Container container)
+        {
+            try
+            {
+                List<Videos> result = new();
+                QueryDefinition queryDefinition = new QueryDefinition($"SELECT * FROM c WHERE c.status = Finished");
+                using(FeedIterator<Videos> setIterator = container.GetItemLinqQueryable<Videos>().Where(x => x.Status == "Finished").ToFeedIterator<Videos>())
+                {
+                    while (setIterator.HasMoreResults)
+                    {
+                        foreach(var item in await setIterator.ReadNextAsync())
+                        {
+                            result.Add(item);
+                        }
+                    }
+                }
+                return result;
+            }
+            catch (CosmosException ex)
+            {
+                Console.WriteLine(ex);
+                return null;
             }
         }
 
@@ -115,7 +171,8 @@ namespace GoussanMedia.DataAccess.Data
             if (string.IsNullOrEmpty(containerName))
             {
                 container = GetContainer(Config.CosmosVideos);
-            } else
+            }
+            else
             {
                 container = GetContainer(containerName);
             }

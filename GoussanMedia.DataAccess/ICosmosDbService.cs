@@ -32,5 +32,7 @@ namespace GoussanMedia.DataAccess
         Task<IEnumerable<Videos>> GetUploadsAsync(string queryString, Container container);
 
         Task ListContainersInDatabase();
+        Task<IEnumerable<Videos>> GetStreamingVideosAsync(Container container);
+        IEnumerable<Videos> GetStreamingVideos(Container container);
     }
 }

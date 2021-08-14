@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 
 namespace GoussanMedia.Domain.Models
 {
@@ -27,7 +28,10 @@ namespace GoussanMedia.Domain.Models
         public string Locator { get; set; }
 
         [JsonProperty(PropertyName = "streamingurl")]
-        public string StreamingUrl { get; set; }
+        public IList<string> StreamingUrl { get; set; }
+
+        [JsonProperty(PropertyName = "streamingurldictionary")]
+        public Dictionary<string, string> StreamingUrlDictionary { get; set; }
 
         [JsonProperty(PropertyName = "created")]
         public DateTime UploadDate { get; set; }
