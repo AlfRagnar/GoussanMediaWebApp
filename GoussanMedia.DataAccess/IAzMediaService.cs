@@ -15,7 +15,6 @@ namespace GoussanMedia.DataAccess
         Task<StreamingEndpoint> EnsureStreamingEndpoint(string Endpoint = "default");
 
         Task<Transform> GetOrCreateTransformAsync(string transformName = "GoussanAdaptiveStreamingPreset");
-
-        Task<IList<string>> GetStreamingUrlsAsync(string locatorName);
+        Task<IList<string>> GetStreamingURL(string locatorName);
     }
 }

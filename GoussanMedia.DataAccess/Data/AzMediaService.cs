@@ -46,7 +46,7 @@ namespace GoussanMedia.DataAccess.Data
             _ = await SubmitJobAsync(asset.Name, outputAsset.Name);
 
             StreamingLocator locator = await CreateStreamingLocatorAsync(outputAsset.Name);
-            videos.Locator = locator.AssetName;
+            videos.Locator = locator.Name;
             videos.OutputAsset = outputAsset.Name;
             return videos;
         }
@@ -184,24 +184,32 @@ namespace GoussanMedia.DataAccess.Data
         }
 
         // Builds the streaming URLs available
-        public async Task<IList<string>> GetStreamingUrlsAsync(string locatorName)
+        public async Task<IList<string>> GetStreamingURL(string locatorName)
         {
-            StreamingEndpoint endpoint = await EnsureStreamingEndpoint();
-            IList<string> streamingUrls = new List<string>();
-
-            ListPathsResponse paths = await _azMediaServices.StreamingLocators.ListPathsAsync(resourceGroupName, accountName, locatorName);
-
-            foreach (StreamingPath path in paths.StreamingPaths)
+            try
             {
-                UriBuilder uriBuilder = new()
+                IList<string> streamingUrls = new List<string>();
+                StreamingEndpoint endpoint = await EnsureStreamingEndpoint();
+
+                ListPathsResponse paths = await _azMediaServices.StreamingLocators.ListPathsAsync(resourceGroupName, accountName, locatorName);
+
+                foreach (StreamingPath path in paths.StreamingPaths)
                 {
-                    Scheme = "https",
-                    Host = endpoint.HostName,
-                    Path = path.Paths[0]
-                };
-                streamingUrls.Add(uriBuilder.ToString());
+                    UriBuilder uriBuilder = new()
+                    {
+                        Scheme = "https",
+                        Host = endpoint.HostName,
+                        Path = path.Paths[0]
+                    };
+                    streamingUrls.Add(uriBuilder.ToString());
+                }
+
+                return streamingUrls;
             }
-            return streamingUrls;
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         // Ensure that streaming endpoint is online and running

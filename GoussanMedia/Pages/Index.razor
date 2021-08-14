@@ -1,11 +1,96 @@
 ﻿@page "/"
 
+@inject IAzMediaService _azMedia
+@inject ICosmosDbService _cosmosDB
+@inject IJSRuntime JSRuntime
 
 <MudContainer>
-    <MudText>
-        This is where videos will be displayed
-    </MudText>
+    @if (_loading)
+    {
+        <MudSkeleton />
+        <MudSkeleton Animation="Animation.False" />
+        <MudSkeleton Animation="Animation.Wave" />
+    }
+    else if (videos != null)
+    {
+        @foreach (var video in videos)
+        {
+            if (video.StreamingUrl != null)
+            {
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h3">
+                            @video.Title
+                        </MudText>
+                        <MudText Typo="Typo.body2">
+                            @video.Description
+                        </MudText>
+
+                        <video id="@video.Id" class="azuremediaplayer amp-default-skin amp-big-play-centered" tabindex="0"> </video>
+                    </MudCardContent>
+                </MudCard>
+            }
+
+        }
+
+    }
+    else
+    {
+        <MudText>
+            This is where videos will be displayed
+        </MudText>
+    }
 </MudContainer>
+
 @code{
 
+    private readonly string containerName = Config.CosmosVideos;
+    private Container container => _cosmosDB.GetContainer(containerName);
+    private IEnumerable<Videos> videos;
+    private bool _loading = true;
+
+    protected override async Task<Task> OnInitializedAsync()
+    {
+        videos = await InitialSetup(container);
+        _loading = false;
+        return base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        videos = await InitialSetup(container);
+        foreach (var video in videos)
+        {
+            await RenderVideo(video.Id, video.StreamingUrl.Last());
+        }
+        _loading = false;
+    }
+
+    async Task RenderVideo(string videoID, string videoURL)
+    {
+        await JSRuntime.InvokeVoidAsync("streamVideo", videoID, videoURL);
+    }
+
+    protected async Task<IEnumerable<Videos>> InitialSetup(Container container)
+    {
+        var response = await GetLists(container);
+        if (response != null)
+        {
+            foreach (var video in response)
+            {
+                var listStreaming = await _azMedia.GetStreamingURL(video.Locator);
+                if (listStreaming != null)
+                {
+                    video.StreamingUrl = listStreaming;
+                }
+            }
+        }
+        return response;
+    }
+
+    protected async Task<IEnumerable<Videos>> GetLists(Container container)
+    {
+        var response = await _cosmosDB.GetStreamingVideosAsync(container);
+        return response;
+    }
 }
