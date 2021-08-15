@@ -1,6 +1,6 @@
 window.streamVideo = function (id, url) {
   var myOptions = {
-    autoplay: true,
+    autoplay: false,
     controls: true,
     width: "800",
     height: "500",
