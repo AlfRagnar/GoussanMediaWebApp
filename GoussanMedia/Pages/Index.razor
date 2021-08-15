@@ -4,7 +4,7 @@
 @inject ICosmosDbService _cosmosDB
 @inject IJSRuntime JSRuntime
 
-<MudContainer>
+<MudGrid>
     @if (_loading)
     {
         <MudSkeleton />
@@ -17,7 +17,7 @@
         {
             if (video.StreamingUrl != null)
             {
-                <MudCard>
+                <MudItem>
                     <MudCardContent>
                         <MudText Typo="Typo.h3">
                             @video.Title
@@ -28,7 +28,7 @@
 
                         <video id="@video.Id" class="azuremediaplayer amp-default-skin amp-big-play-centered" tabindex="0"> </video>
                     </MudCardContent>
-                </MudCard>
+                </MudItem>
             }
 
         }
@@ -40,7 +40,7 @@
             This is where videos will be displayed
         </MudText>
     }
-</MudContainer>
+</MudGrid>
 
 @code{
 
