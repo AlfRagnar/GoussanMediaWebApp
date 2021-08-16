@@ -32,7 +32,6 @@ namespace GoussanMedia
             Config.AzureStorageBlob = Configuration["GoussanStorage:blob"];
             Config.AzureStorageQueue = Configuration["GoussanStorage:queue"];
             Config.AzureAppInsight = Configuration["AppInsightConString"];
-            Config.CosmosDocuments = Configuration["CosmosDb:Containers:ToDoList:containerName"];
             Config.CosmosVideos = Configuration["CosmosDb:Containers:Videos:containerName"];
             Config.AadClientId = Configuration["AadClientId"];
             Config.AadSecret = Configuration["AadSecret"];

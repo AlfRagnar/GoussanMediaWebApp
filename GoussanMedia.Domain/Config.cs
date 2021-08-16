@@ -10,7 +10,6 @@
         public static string AppName { get; set; }
         public static string AppRegion { get; set; }
         public static string CosmosDBName { get; set; }
-        public static string CosmosDocuments { get; set; }
         public static string CosmosVideos { get; set; }
         public static string AadTenantDomain { get; set; }
         public static string AadTenantId { get; set; }
