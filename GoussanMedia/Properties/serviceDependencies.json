@@ -12,13 +12,13 @@
       "type": "cosmosdb",
       "connectionId": "GoussanCosmos"
     },
-    "signalr1": {
-      "type": "signalr",
-      "connectionId": "Azure__SignalR__ConnectionString"
-    },
     "storage1": {
       "type": "storage",
       "connectionId": "GoussanStorage"
+    },
+    "signalr1": {
+      "type": "signalr",
+      "connectionId": "Azure__SignalR__ConnectionString"
     }
   }
 }
